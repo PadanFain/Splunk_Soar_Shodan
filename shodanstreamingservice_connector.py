@@ -38,6 +38,7 @@ class ShodanStreamingServiceConnector(BaseConnector):
         # Do note that the app json defines the asset config, so please
         # modify this as you deem fit.
         self._base_url = None
+        self._api_key = None
 
     def _process_empty_response(self, response, action_result):
         if response.status_code == 200:
@@ -182,21 +183,11 @@ class ShodanStreamingServiceConnector(BaseConnector):
         # use self.save_progress(...) to send progress messages back to the platform
         self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
 
-        # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
-        # Access action parameters passed in the 'param' dictionary
-
-        # Required values can be accessed directly
-        # required_parameter = param['required_parameter']
-
-        # Optional values should use the .get() function
-        # optional_parameter = param.get('optional_parameter', 'default_value')
 
         # make rest call
-        ret_val, response = self._make_rest_call(
-            '/banners', action_result, params=None, headers=None
-        )
+        ret_val, response = self._make_rest_call('/banners', action_result, params=None, headers=None)
 
         if phantom.is_fail(ret_val):
             # the call to the 3rd party device or service failed, action result should contain all the error details
@@ -228,40 +219,41 @@ class ShodanStreamingServiceConnector(BaseConnector):
 
         self.debug_print("action_id", self.get_action_identifier())
 
-        if action_id == 'get_banners':
-            ret_val = self._handle_get_banners(param)
+        def default_handle_action(param):
+            action_result = self.add_action_result(ActionResult(dict(param)))
+            self.debug_print("Action id is not mapped in handle_action function")
+            return action_result.set_status(phantom.APP_ERROR, "Action not mapped")
+            
 
-        if action_id == 'test_connectivity':
-            ret_val = self._handle_test_connectivity(param)
+        action_dict = {'test_connectivity' : self._handle_test_connectivity,
+                       'get_banners' :       self._handle_get_banners}
+
+        action_function =action_id.get(action_id, default_handle_action)        
+        ret_val = action_function(param)
 
         return ret_val
 
     def initialize(self):
-        # Load the state in initialize, use it to store data
-        # that needs to be accessed across actions
-        self._state = self.load_state()
 
         # get the asset config
         config = self.get_config()
-        """
-        # Access values in asset config by the name
-
-        # Required values can be accessed directly
-        required_config_name = config['required_config_name']
-
-        # Optional values should use the .get() function
-        optional_config_name = config.get('optional_config_name')
-        """
-
-        self._base_url = config.get('base_url')
+        self._base_url = clean_base_url(config['base_url'])
+        self._api_key = config['api_key']
 
         return phantom.APP_SUCCESS
 
     def finalize(self):
-        # Save the state, this data is saved across actions and app upgrades
-        self.save_state(self._state)
         return phantom.APP_SUCCESS
 
+def clean_base_url(url_to_check):
+    if not url_to_check.endswith("/"):
+        url_to_check += "/"
+    if not url_to_check.startswith("https"):
+        if url_to_check.startswith("http"):
+            url_to_check = url_to_check.replace('http', "https")
+        else:
+            url_to_check = "https://" + url_to_check
+    return url_to_check
 
 def main():
     import argparse

@@ -13,7 +13,7 @@ from phantom.base_connector import BaseConnector
 from phantom.action_result import ActionResult
 
 # Usage of the consts file is recommended
-# from shodanstreamingservice_consts import *
+# from shodan_consts import *
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -25,12 +25,12 @@ class RetVal(tuple):
         return tuple.__new__(RetVal, (val1, val2))
 
 
-class ShodanStreamingServiceConnector(BaseConnector):
+class ShodanConnector(BaseConnector):
 
     def __init__(self):
 
         # Call the BaseConnectors init first
-        super(ShodanStreamingServiceConnector, self).__init__()
+        super(ShodanConnector, self).__init__()
 
         self._state = None
 
@@ -126,7 +126,6 @@ class ShodanStreamingServiceConnector(BaseConnector):
         # **kwargs can be any additional parameters that requests.request accepts
 
         config = self.get_config()
-        YOUR_API_KEY = config['api_key']
 
         resp_json = None
 
@@ -139,11 +138,12 @@ class ShodanStreamingServiceConnector(BaseConnector):
             )
 
         # Create a URL to connect to
-        url = self._base_url + endpoint + f"?key={YOUR_API_KEY}"
+        url = self._base_url + endpoint
 
         try:
             r = request_func(
                 url,
+                # auth=(username, password),  # basic authentication
                 verify=config.get('verify_server_cert', False),
                 **kwargs
             )
@@ -157,7 +157,13 @@ class ShodanStreamingServiceConnector(BaseConnector):
         return self._process_response(r, action_result)
 
     def _handle_test_connectivity(self, param):
+        # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
+
+        # NOTE: test connectivity does _NOT_ take any parameters
+        # i.e. the param dictionary passed to this handler will be empty.
+        # Also typically it does not add any data into an action_result either.
+        # The status and progress messages are more important.
 
         self.save_progress("Connecting to endpoint")
         # make rest call
@@ -178,35 +184,6 @@ class ShodanStreamingServiceConnector(BaseConnector):
         # For now return Error with a message, in case of success we don't set the message, but use the summary
         return action_result.set_status(phantom.APP_ERROR, "Action not yet implemented")
 
-    def _handle_get_banners(self, param):
-        # use self.save_progress(...) to send progress messages back to the platform
-        self.save_progress("In action handler for: {0}".format(self.get_action_identifier()))
-
-        action_result = self.add_action_result(ActionResult(dict(param)))
-
-
-        # make rest call
-        ret_val, response = self._make_rest_call('banners', action_result, params=None, headers=None)
-
-        if phantom.is_fail(ret_val):
-            return action_result.get_status()
-
-        # Now post process the data,  uncomment code as you deem fit
-
-        # Add the response into the data section
-        action_result.add_data(response)
-
-        # Add a dictionary that is made up of the most important values from data into the summary
-        # summary = action_result.update_summary({})
-        # summary['num_data'] = len(action_result['data'])
-
-        # Return success, no need to set the message, only the status
-        # BaseConnector will create a textual message based off of the summary dictionary
-        # return action_result.set_status(phantom.APP_SUCCESS)
-
-        # For now return Error with a message, in case of success we don't set the message, but use the summary
-        return action_result.set_status(phantom.APP_ERROR, "Action not yet implemented")
-
     def handle_action(self, param):
         ret_val = phantom.APP_SUCCESS
 
@@ -215,40 +192,37 @@ class ShodanStreamingServiceConnector(BaseConnector):
 
         self.debug_print("action_id", self.get_action_identifier())
 
-        def default_handle_action(param):
-            action_result = self.add_action_result(ActionResult(dict(param)))
-            self.debug_print("Action id is not mapped in handle_action function")
-            return action_result.set_status(phantom.APP_ERROR, "Action not mapped")
-            
-
-        action_dict = {'test_connectivity' : self._handle_test_connectivity,
-                       'get_banners' :       self._handle_get_banners}
-
-        action_function =action_id.get(action_id, default_handle_action)        
-        ret_val = action_function(param)
+        if action_id == 'test_connectivity':
+            ret_val = self._handle_test_connectivity(param)
 
         return ret_val
 
     def initialize(self):
+        # Load the state in initialize, use it to store data
+        # that needs to be accessed across actions
+        self._state = self.load_state()
 
         # get the asset config
         config = self.get_config()
-        self._base_url = clean_base_url(config['base_url'])
+        """
+        # Access values in asset config by the name
+
+        # Required values can be accessed directly
+        required_config_name = config['required_config_name']
+
+        # Optional values should use the .get() function
+        optional_config_name = config.get('optional_config_name')
+        """
+
+        self._base_url = config.get('base_url')
 
         return phantom.APP_SUCCESS
 
     def finalize(self):
+        # Save the state, this data is saved across actions and app upgrades
+        self.save_state(self._state)
         return phantom.APP_SUCCESS
 
-def clean_base_url(url_to_check):
-    if not url_to_check.endswith("/"):
-        url_to_check += "/"
-    if not url_to_check.startswith("https"):
-        if url_to_check.startswith("http"):
-            url_to_check = url_to_check.replace('http', "https")
-        else:
-            url_to_check = "https://" + url_to_check
-    return url_to_check
 
 def main():
     import argparse
@@ -273,7 +247,7 @@ def main():
 
     if username and password:
         try:
-            login_url = ShodanStreamingServiceConnector._get_phantom_base_url() + '/login'
+            login_url = ShodanConnector._get_phantom_base_url() + '/login'
 
             print("Accessing the Login page")
             r = requests.get(login_url, verify=False)
@@ -300,7 +274,7 @@ def main():
         in_json = json.loads(in_json)
         print(json.dumps(in_json, indent=4))
 
-        connector = ShodanStreamingServiceConnector()
+        connector = ShodanConnector()
         connector.print_progress_message = True
 
         if session_id is not None:

@@ -38,7 +38,6 @@ class ShodanStreamingServiceConnector(BaseConnector):
         # Do note that the app json defines the asset config, so please
         # modify this as you deem fit.
         self._base_url = None
-        self._api_key = None
 
     def _process_empty_response(self, response, action_result):
         if response.status_code == 200:
@@ -127,6 +126,7 @@ class ShodanStreamingServiceConnector(BaseConnector):
         # **kwargs can be any additional parameters that requests.request accepts
 
         config = self.get_config()
+        YOUR_API_KEY = config['api_key']
 
         resp_json = None
 
@@ -139,12 +139,11 @@ class ShodanStreamingServiceConnector(BaseConnector):
             )
 
         # Create a URL to connect to
-        url = self._base_url + endpoint
+        url = self._base_url + endpoint + f"?key={YOUR_API_KEY}"
 
         try:
             r = request_func(
                 url,
-                # auth=(username, password),  # basic authentication
                 verify=config.get('verify_server_cert', False),
                 **kwargs
             )
@@ -187,13 +186,10 @@ class ShodanStreamingServiceConnector(BaseConnector):
 
 
         # make rest call
-        ret_val, response = self._make_rest_call('/banners', action_result, params=None, headers=None)
+        ret_val, response = self._make_rest_call('banners', action_result, params=None, headers=None)
 
         if phantom.is_fail(ret_val):
-            # the call to the 3rd party device or service failed, action result should contain all the error details
-            # for now the return is commented out, but after implementation, return from here
-            # return action_result.get_status()
-            pass
+            return action_result.get_status()
 
         # Now post process the data,  uncomment code as you deem fit
 
@@ -238,7 +234,6 @@ class ShodanStreamingServiceConnector(BaseConnector):
         # get the asset config
         config = self.get_config()
         self._base_url = clean_base_url(config['base_url'])
-        self._api_key = config['api_key']
 
         return phantom.APP_SUCCESS
 

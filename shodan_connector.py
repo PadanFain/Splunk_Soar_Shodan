@@ -14,6 +14,7 @@ from phantom.action_result import ActionResult
 
 # Usage of the consts file is recommended
 # from shodan_consts import *
+from dictionary_api import Dictionary
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -157,7 +158,6 @@ class ShodanConnector(BaseConnector):
         return self._process_response(r, action_result)
 
     def _handle_test_connectivity(self, param):
-        # Add an action result object to self (BaseConnector) to represent the action for this param
         action_result = self.add_action_result(ActionResult(dict(param)))
 
         # NOTE: test connectivity does _NOT_ take any parameters
@@ -187,13 +187,24 @@ class ShodanConnector(BaseConnector):
     def handle_action(self, param):
         ret_val = phantom.APP_SUCCESS
 
-        # Get the action that we are supposed to execute for this App Run
         action_id = self.get_action_identifier()
 
         self.debug_print("action_id", self.get_action_identifier())
 
-        if action_id == 'test_connectivity':
-            ret_val = self._handle_test_connectivity(param)
+        def default_handle_action(param):
+            action_result = self.add_action_result(ActionResult(dict(param)))
+            self.debug_print("Action id is not mapped in handle_action function")
+            return action_result.set_status(phantom.APP_ERROR, "Action not mapped")
+
+
+        action_dict = {'test_connectivity' : self._handle_test_connectivity,
+                       'list_queries': self._directory.queries,
+                       'search_queries': self._directory.queries_search,
+                       'search_tags': self._directory.queries_tags
+                       }
+
+        action_function =action_id.get(action_id, default_handle_action)        
+        ret_val = action_function(param)
 
         return ret_val
 
@@ -215,6 +226,7 @@ class ShodanConnector(BaseConnector):
         """
 
         self._base_url = config.get('base_url')
+        self._directory = Dictionary(self)
 
         return phantom.APP_SUCCESS
 

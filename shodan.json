@@ -29,6 +29,187 @@
             "parameters": {},
             "output": [],
             "versions": "EQ(*)"
+        },
+        {
+            "action": "list queries",
+            "identifier": "list_queries",
+            "description": "List the saved search queries",
+            "verbose": "Use this method to obtain a list of search queries that users have saved in Shodan.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "page":{
+                    "description": "Page number to iterate over results; each page contains 10 items. Enter 0 for entire list",
+                    "data_type": "numeric",
+                    "required": false,
+                    "default": 1
+                },
+                "sort": {
+                    "description": "the hash of the file to be queried",
+                    "data_type": "string",
+                    "value_list": ["timestamp", "votes"],
+                    "required": false,
+                    "allow_list": true              
+                },
+                "order": {
+                    "description": "the hash of the file to be queried",
+                    "data_type": "string",
+                    "contains": ["hash", "sha256", "sha1", "md5"],
+                    "required": false,
+                    "allow_list": true
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.*.votes",
+                    "data_type": "numeric",
+                    "example_values": [ 1, 3 ]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string",
+                    "example_values": ["Danieverton", "This is Moxa Nport Devices ICS system with Authentication disabled Author: A1C3VENOM"]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.timestamp",
+                    "data_type": "string",
+                    "contains" : ["timestamp"],
+                    "example_values": [ "2021-01-26T19:41:50.961000", "2021-01-24T07:44:08.889000"]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.title",
+                    "data_type": "string",
+                    "example_values":  [ "ip camera" ]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.query",
+                    "data_type": "string",
+                    "example_values": ["ip camera BR"]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.tags.*",
+                    "data_type": "string",
+                    "example_values": ["ics", "iot", "moxa"]
+                },
+                {
+                    "data_path": "summary.total_matches",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                }
+
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "search queries",
+            "identifier": "search_queries",
+            "description": "Search the directory of saved search queries.",
+            "verbose": "Use this method to search the directory of search queries that users have saved in Shodan.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "query": {
+                    "description": "What to search for in the directory of saved search queries",
+                    "data_type": "string",
+                    "required": true
+                },
+                "page":{
+                    "description": "Page number to iterate over results; each page contains 10 items. Enter 0 for entire list",
+                    "data_type": "numeric",
+                    "required": false,
+                    "default": 1
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.*.votes",
+                    "data_type": "numeric",
+                    "example_values": [ 1, 3 ]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string",
+                    "example_values": ["Danieverton", "This is Moxa Nport Devices ICS system with Authentication disabled Author: A1C3VENOM"]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.timestamp",
+                    "data_type": "string",
+                    "contains" : ["timestamp"],
+                    "example_values": [ "2021-01-26T19:41:50.961000", "2021-01-24T07:44:08.889000"]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.title",
+                    "data_type": "string",
+                    "example_values":  [ "webcam", "Webcam" ]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.query",
+                    "data_type": "string",
+                    "example_values": ["ip camera BR"]
+    
+                },
+                {
+                    "data_path": "action_result.data.*.tags.*",
+                    "data_type": "string",
+                    "example_values": ["ics", "iot", "moxa"]
+                },
+                {
+                    "data_path": "summary.total_matches",
+                    "data_type": "numeric",
+                    "example_values": [
+                        1
+                    ]
+                }
+
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "search popular tags",
+            "identifier": "search_tags",
+            "description": "List the most popular tags.",
+            "verbose": "Use this method to obtain a list of popular tags for the saved search queries in Shodan.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {
+                "size":{
+                    "description": "The number of tags to return (default: 10).",
+                    "data_type": "numeric",
+                    "required": false,
+                    "default": 10
+                }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.*.count",
+                    "data_type": "numeric",
+                    "example_values": [ 1, 3 ]
+                },
+                {
+                    "data_path": "action_result.data.*.value",
+                    "data_type": "string",
+                    "example_values": ["webcam", "cam"]
+    
+                },
+                {
+                    "data_path": "summary.total_matches",
+                    "data_type": "numeric",
+                    "example_values": [100]
+                }
+
+            ],
+            "versions": "EQ(*)"
         }
     ]
 }

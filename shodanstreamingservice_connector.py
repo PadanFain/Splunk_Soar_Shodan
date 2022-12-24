@@ -231,8 +231,6 @@ class ShodanStreamingServiceConnector(BaseConnector):
 
     def initialize(self):
 
-        self._state = self.load_state()
-
         # get the asset config
         config = self.get_config()
         self._base_url = clean_base_url(config['base_url'])
@@ -240,7 +238,6 @@ class ShodanStreamingServiceConnector(BaseConnector):
         return phantom.APP_SUCCESS
 
     def finalize(self):
-        self.save_state(self._state)
         return phantom.APP_SUCCESS
 
 def clean_base_url(url_to_check):

@@ -15,6 +15,7 @@ from phantom.action_result import ActionResult
 # Usage of the consts file is recommended
 # from shodan_consts import *
 from dictionary_api import Dictionary
+from notifiier_api import Notifier
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -200,7 +201,13 @@ class ShodanConnector(BaseConnector):
         action_dict = {'test_connectivity' : self._handle_test_connectivity,
                        'list_queries': self._directory.queries,
                        'search_queries': self._directory.queries_search,
-                       'search_tags': self._directory.queries_tags
+                       'search_tags': self._directory.queries_tags,
+                       'get_all_user_notications': self._notifier.get_all_user_notications,
+                       'get_all_notifiaction_providers': self._notifier.get_all_notifiaction_providers,
+                       'create_notification': self._notifier.create_notification,
+                       'edit_notification': self._notifier.edit_notification,
+                       'retrieve_notification': self._notifier.retrieve_notification,
+                       'delete_notification': self._notifier.delete_notification,
                        }
 
         action_function =action_id.get(action_id, default_handle_action)        
@@ -227,7 +234,7 @@ class ShodanConnector(BaseConnector):
 
         self._base_url = config.get('base_url')
         self._directory = Dictionary(self)
-
+        self._notifier = Notifier(self)
         return phantom.APP_SUCCESS
 
     def finalize(self):

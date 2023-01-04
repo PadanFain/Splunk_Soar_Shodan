@@ -99,7 +99,6 @@ class Dictionary:
         return action_result.set_status(phantom.APP_SUCCESS)
 
     def queries_tags(self, params):
-    #  def queries_tags(self, size=10):
         """List the most popular tags. """
         self.save_progress('In action handler for: {0}'.format(self.get_action_identifier()))       
         action_result = self._parent.add_action_result(ActionResult(dict(params)))
@@ -117,7 +116,6 @@ class Dictionary:
         summary = action_result.update_summary({})
         summary['total_matches'] = response['total']
         action_result.update_data(found_matches)
-
 
         if phantom.is_fail(ret_val):
             self.save_progress("Search Tag Queries action Failed.")

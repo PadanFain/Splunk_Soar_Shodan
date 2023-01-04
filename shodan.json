@@ -210,6 +210,216 @@
 
             ],
             "versions": "EQ(*)"
-        }
+        },
+        {
+            "action": "get all user notications",
+            "identifier": "get_all_user_notications",
+            "description": "Get a list of all the notifiers that the user has created.",
+            "type": "investigate",
+            "read_only": true,
+            "parameters": {},
+            "output": [
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string",
+                    "example_values": [ null, "Email notifier"]
+                },
+                {
+                    "data_path": "action_result.data.*.provider",
+                    "data_type": "string",
+                    "example_values": ["email"]
+                },
+                {
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "string",
+                    "example_values": ["default"]
+                },
+                {
+                    "data_path": "action_result.data.*.args.*.key",
+                    "data_type": "string",
+                    "example_values": ["to"]
+                },
+                {
+                    "data_path": "action_result.data.*.args.*.value",
+                    "data_type": "string",
+                    "example_values": ["jmath@shodan.io"]
+                },
+                {
+                    "data_path": "summary.total_matches",
+                    "data_type": "numeric",
+                    "example_values": [100]
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "get_all_notifiaction_providers",
+            "identifier": "get_all_notifiaction_providers",
+            "description": "List of available notification providers",
+            "verbose": "Get a list of all the notification providers that are available and the parameters to submit when creating them.",
+            "type": "investigate",
+            "read_only": true,
+            "output": [
+                {
+                    "data_path": "action_result.data.*.provider",
+                    "data_type": "string",
+                    "example_values": ["email"]
+                },
+                {
+                    "data_path": "action_result.data.*.required.*.value",
+                    "data_type": "string",
+                    "example_values": ["token"]
+                },
+                {
+                    "data_path": "summary.total",
+                    "data_type": "numeric",
+                    "example_values": [100]
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "create_notification",
+            "identifier": "create_notification",
+            "description": "Create a new notification service for the user",
+            "verbose": "Use this method to create a new notification service endpoint that Shodan services can send notifications through.",
+            "type": "generic",
+            "read_only": false,
+            "parameters": {
+                "provider": {
+                    "description": "Provider name to be returned when queried by id",
+                    "data_type": "string",
+                    "required": true
+                },
+                "description":{
+                    "description": "Description of the notifier",
+                    "data_type": "string",
+                    "required": true
+                },
+                "args":{
+                    "description": "Arguments required by the provider. String of Key=Value separated by commas",
+                    "data_type": "string",
+                    "required": true
+                }
+            },
+            "output": [
+                {
+                    "data_path": "summary.success",
+                    "data_type": "bool",
+                    "example_values": [true]
+                },
+                {
+                    "data_path": "summary.id",
+                    "data_type": "string",
+                    "example_values": ["1VxiaJb93Gn8TUnM"]
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "delete_notification",
+            "identifier": "delete_notification",
+            "description": "Delete a notification service",
+            "verbose": "Remove the notification service created for the user.            ",
+            "type": "generic",
+            "read_only": false,
+            "parameters": {
+                "id": {
+                    "description": "Notifier ID",
+                    "data_type": "string",
+                    "required": true
+                }
+            },
+            "output": [
+                {
+                    "data_path": "summary.success",
+                    "data_type": "bool",
+                    "example_values": [true]
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "retrieve_notification",
+            "identifier": "retrieve_notification",
+            "description": "Get information about a notifier",
+            "verbose": "Use this method to read a new notification service endpoint that Shodan services can send notifications through.",
+            "type": "generic",
+            "read_only": true,
+            "parameters": {
+                "id": {
+                        "description": "Notifier ID",
+                        "data_type": "string",
+                        "required": true
+                    }
+            },
+            "output": [
+                {
+                    "data_path": "action_result.data.*.provider",
+                    "data_type": "string",
+                    "example_values": ["email"]
+                },
+                {
+                    "data_path": "action_result.data.*.description",
+                    "data_type": "string",
+                    "example_values": ["Email notifier"]
+                },
+                {
+                    "data_path": "action_result.data.*.id",
+                    "data_type": "string",
+                    "example_values": ["1VxiaJb93Gn8TUnM"]
+                },
+                {
+                    "data_path": "action_result.data.*.args.*.key",
+                    "data_type": "string",
+                    "example_values": ["token"]
+                },
+                {
+                    "data_path": "action_result.data.*.args.*.value",
+                    "data_type": "string",
+                    "example_values": ["token"]
+                },
+                {
+                    "data_path": "summary.total",
+                    "data_type": "numeric",
+                    "example_values": [100]
+                }
+            ],
+            "versions": "EQ(*)"
+        },
+        {
+            "action": "edit_notification",
+            "identifier": "edit_notification",
+            "description": "Edit a notifier",
+            "verbose": "Use this method to update the parameters of a notifier.",
+            "type": "generic",
+            "read_only": false,
+            "parameters": {
+                "id": {
+                        "description": "Notifier ID",
+                        "data_type": "string",
+                        "required": true
+                    },
+                    "args":{
+                        "description": "Arguments required by the provider. String of Key=Value separated by commas",
+                        "data_type": "string",
+                        "required": true
+                    }
+    
+            },
+            "output": [
+                {
+                    "data_path": "summary.success",
+                    "data_type": "bool",
+                    "example_values": [true]
+                },
+                {
+                    "data_path": "summary.id",
+                    "data_type": "string",
+                    "example_values": ["1VxiaJb93Gn8TUnM"]
+                }
+            ],
+            "versions": "EQ(*)"
+        }        
     ]
 }

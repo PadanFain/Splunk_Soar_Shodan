@@ -17,8 +17,17 @@ class Notifier:
         ret_val, response = self._make_rest_call(SHODAN_NOTIFIER, action_result, params=None, headers=None)
 
         summary = action_result.update_summary({})
-        summary['total'] = response['total']
-        action_result.update_data(response['matches'])
+        summary['total_matches'] = response['total']
+        matches = response['matches']
+    
+        for match in matches:
+            new_args = []
+            current_args = match['args']
+            for k, v in current_args.items():
+                new_args.append(dict(key=k, value=v))
+            match['args'] = new_args
+
+        action_result.update_data()
 
         if phantom.is_fail(ret_val):
             self.save_progress("Get all user notificstions action Failed.")
@@ -34,8 +43,13 @@ class Notifier:
         # response is a dict of dicts, need to massage to make phantom friendly
 
         remap = []
-        for k,v in response.items():
-            temp = dict(provider=k, required=v['required']) 
+        for provider, required_items in response.items():
+            temp = {'provider': provider}
+            new_required = []
+            for required_list in required_items.values():
+                for required_item in required_list:
+                    new_required.append(dict(value=required_item))
+            temp['required'] = new_required
             remap.append(temp)
 
         summary = action_result.update_summary({})
@@ -130,6 +144,13 @@ class Notifier:
 
         summary = action_result.update_summary({})
         summary['success'] = True
+
+        new_args = []
+        current_args = response['args']
+        for k, v in current_args.items():
+            new_args.append(dict(key=k, value=v))
+
+        response['args'] = new_args
         action_result.add_data(response)
 
         self.save_progress("Search tag queries Passed")
